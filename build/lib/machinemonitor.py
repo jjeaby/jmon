@@ -50,21 +50,21 @@ class MachineMonitor(object):
             gpu_value = data.split(",")
             if len(gpu_value) > 1:
                 temp_info = {"gpu" + str(idx) + "_uuid": gpu_value[0].strip(),
-                             "gpu" + str(idx) + "_index_id": gpu_value[1].strip(),
+                             "gpu" + str(idx) + "_index_id": int(gpu_value[1].strip()),
                              "gpu" + str(idx) + "_name": gpu_value[2].strip(),
-                             "gpu" + str(idx) + "_total_memory": gpu_value[3].strip(),
-                             "gpu" + str(idx) + "_used_memory": gpu_value[4].strip(),
-                             "gpu" + str(idx) + "_free_memory": gpu_value[5].strip(),
-                             "gpu" + str(idx) + "_temperature": gpu_value[6].strip()}
+                             "gpu" + str(idx) + "_total_memory": int(gpu_value[3].strip()),
+                             "gpu" + str(idx) + "_used_memory": int(gpu_value[4].strip()),
+                             "gpu" + str(idx) + "_free_memory": int(gpu_value[5].strip()),
+                             "gpu" + str(idx) + "_temperature": float(gpu_value[6].strip())}
                 gpu_info.append(temp_info)
         return gpu_info
 
     def memory_information(self):
         memory_total, memory_used, memory_free = map(int, os.popen('free -t -m').readlines()[-1].split()[1:])
         memory_info = {
-            "memory_total": memory_total,
-            "memory_used": memory_used,
-            "memory_free": memory_free
+            "memory_total": int(memory_total),
+            "memory_used": int(memory_used),
+            "memory_free": int(memory_free)
         }
 
         return memory_info
@@ -215,6 +215,7 @@ if __name__ == '__main__':
 
     args = parser.parse_args()
     print(args)
+
 
     machinemonitor = MachineMonitor(args.ip, args.port, args.id, args.password, args.database, str(args.commit).lower())
     while True:
