@@ -52,10 +52,10 @@ class MachineMonitor(object):
                 temp_info = {"gpu" + str(idx) + "_uuid": gpu_value[0].strip(),
                              "gpu" + str(idx) + "_index_id": gpu_value[1].strip(),
                              "gpu" + str(idx) + "_name": gpu_value[2].strip(),
-                             "gpu" + str(idx) + "_total_memory": gpu_value[3].strip(),
-                             "gpu" + str(idx) + "_used_memory": gpu_value[4].strip(),
-                             "gpu" + str(idx) + "_free_memory": gpu_value[5].strip(),
-                             "gpu" + str(idx) + "_temperature": gpu_value[6].strip()}
+                             "gpu" + str(idx) + "_total_memory": int(gpu_value[3].strip()),
+                             "gpu" + str(idx) + "_used_memory": int(gpu_value[4].strip()),
+                             "gpu" + str(idx) + "_free_memory": int(gpu_value[5].strip()),
+                             "gpu" + str(idx) + "_temperature": float(gpu_value[6].strip())}
                 gpu_info.append(temp_info)
         return gpu_info
 
@@ -132,7 +132,7 @@ class MachineMonitor(object):
             CPU_Percentage = ((Total - PrevTotal) - (Idle - PrevIdle)) / (Total - PrevTotal) * 100
             cpu_load.update({cpu: CPU_Percentage})
 
-        cpu_info = {"cpu_usage": str(round(cpu_load["cpu"], 2))}
+        cpu_info = {"cpu_usage": float(round(cpu_load["cpu"], 2))}
         # device_type = subprocess.check_output(['cat', '/sys/class/thermal/thermal_zone*/type']).decode("utf-8")
         device_type = os.popen('cat /sys/class/thermal/thermal_zone*/type').readlines()
         device_temperature = os.popen('cat /sys/class/thermal/thermal_zone*/temp').readlines()
@@ -142,7 +142,7 @@ class MachineMonitor(object):
                 cpu_temperature = device_temperature[idx]
                 break
 
-        cpu_info["cpu_temperature"] = float(cpu_temperature) / 1000
+        cpu_info["cpu_temperature"] = float( float(cpu_temperature) / 1000 )
 
         return cpu_info
 
