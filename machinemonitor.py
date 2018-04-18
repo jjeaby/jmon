@@ -132,7 +132,7 @@ class MachineMonitor(object):
             CPU_Percentage = ((Total - PrevTotal) - (Idle - PrevIdle)) / (Total - PrevTotal) * 100
             cpu_load.update({cpu: CPU_Percentage})
 
-        cpu_info = {"cpu_usage": float(round(cpu_load["cpu"], 2))}
+        cpu_info = {"cpu_usage": round(cpu_load["cpu"], 2)}
         # device_type = subprocess.check_output(['cat', '/sys/class/thermal/thermal_zone*/type']).decode("utf-8")
         device_type = os.popen('cat /sys/class/thermal/thermal_zone*/type').readlines()
         device_temperature = os.popen('cat /sys/class/thermal/thermal_zone*/temp').readlines()
@@ -192,7 +192,7 @@ class MachineMonitor(object):
         point["tags"] = json.loads(tags_data)
         point["fields"] = json.loads(fields_data)
 
-        print(point)
+        pprint.pprint(point)
         points.append(point)
         if self.commit == 'on':
             ret = client.write_points(points)
@@ -224,6 +224,6 @@ if __name__ == '__main__':
             "gpu": machinemonitor.get_gpu_infomation(),
             "memory": machinemonitor.memory_information(),
         }
-
+ 
         machinemonitor.influxdbInsertData(server_info)
         time.sleep(args.interval)
