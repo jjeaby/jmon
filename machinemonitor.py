@@ -175,7 +175,7 @@ class MachineMonitor(object):
             fields_data[data] = memory[data]
         for idx, list in enumerate(gpu):
             for data in dict(list.items()):
-                fields_data[data] = gpu[idx][data].strip()
+                fields_data[data] = gpu[idx][data]
         tags_data = json.dumps(tags_data)
         fields_data = json.dumps(fields_data)
         print(tags_data)
