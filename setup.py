@@ -12,8 +12,8 @@ install_requires = [
 
 setup(
     name='jmon',
-    version='0.1',
-    py_modules = ['machine'],  
+    version='0.21',
+    #py_modules = ['machine'],  
     packages=find_packages(exclude=['tests']),
     install_requires=install_requires,
     include_package_data=True,
