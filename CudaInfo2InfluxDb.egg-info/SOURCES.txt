@@ -1,8 +1,0 @@
-README.md
-__init__.py
-machinemonitor.py
-setup.py
-CudaInfo2InfluxDb.egg-info/PKG-INFO
-CudaInfo2InfluxDb.egg-info/SOURCES.txt
-CudaInfo2InfluxDb.egg-info/dependency_links.txt
-CudaInfo2InfluxDb.egg-info/top_level.txt

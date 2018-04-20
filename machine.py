@@ -10,7 +10,7 @@ import time
 from influxdb import InfluxDBClient
 
 
-class MachineMonitor(object):
+class Machine(object):
     def __init__(self, host_ip='127.0.0.1', host_port='8086', id='', password='', database='cuda_information', commit='on'):
         self.host_ip = host_ip
         self.host_port = host_port
@@ -50,7 +50,7 @@ class MachineMonitor(object):
             gpu_value = data.split(",")
             if len(gpu_value) > 1:
                 temp_info = {"gpu" + str(idx) + "_uuid": gpu_value[0].strip(),
-                             "gpu" + str(idx) + "_index_id": int(gpu_value[1].strip()),
+                             "gpu" + str(idx) + "_index_id": gpu_value[1].strip(),
                              "gpu" + str(idx) + "_name": gpu_value[2].strip(),
                              "gpu" + str(idx) + "_total_memory": int(gpu_value[3].strip()),
                              "gpu" + str(idx) + "_used_memory": int(gpu_value[4].strip()),
@@ -62,9 +62,9 @@ class MachineMonitor(object):
     def memory_information(self):
         memory_total, memory_used, memory_free = map(int, os.popen('free -t -m').readlines()[-1].split()[1:])
         memory_info = {
-            "memory_total": int(memory_total),
-            "memory_used": int(memory_used),
-            "memory_free": int(memory_free)
+            "memory_total": memory_total,
+            "memory_used": memory_used,
+            "memory_free": memory_free
         }
 
         return memory_info
@@ -132,7 +132,7 @@ class MachineMonitor(object):
             CPU_Percentage = ((Total - PrevTotal) - (Idle - PrevIdle)) / (Total - PrevTotal) * 100
             cpu_load.update({cpu: CPU_Percentage})
 
-        cpu_info = {"cpu_usage": str(round(cpu_load["cpu"], 2))}
+        cpu_info = {"cpu_usage": round(cpu_load["cpu"], 2)}
         # device_type = subprocess.check_output(['cat', '/sys/class/thermal/thermal_zone*/type']).decode("utf-8")
         device_type = os.popen('cat /sys/class/thermal/thermal_zone*/type').readlines()
         device_temperature = os.popen('cat /sys/class/thermal/thermal_zone*/temp').readlines()
@@ -142,7 +142,7 @@ class MachineMonitor(object):
                 cpu_temperature = device_temperature[idx]
                 break
 
-        cpu_info["cpu_temperature"] = float(cpu_temperature) / 1000
+        cpu_info["cpu_temperature"] = float( float(cpu_temperature) / 1000 )
 
         return cpu_info
 
@@ -175,7 +175,7 @@ class MachineMonitor(object):
             fields_data[data] = memory[data]
         for idx, list in enumerate(gpu):
             for data in dict(list.items()):
-                fields_data[data] = gpu[idx][data].strip()
+                fields_data[data] = gpu[idx][data]
         tags_data = json.dumps(tags_data)
         fields_data = json.dumps(fields_data)
         print(tags_data)
@@ -192,7 +192,7 @@ class MachineMonitor(object):
         point["tags"] = json.loads(tags_data)
         point["fields"] = json.loads(fields_data)
 
-        print(point)
+        pprint.pprint(point)
         points.append(point)
         if self.commit == 'on':
             ret = client.write_points(points)
@@ -216,7 +216,6 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
-
     machinemonitor = MachineMonitor(args.ip, args.port, args.id, args.password, args.database, str(args.commit).lower())
     while True:
         server_info = {
@@ -225,6 +224,6 @@ if __name__ == '__main__':
             "gpu": machinemonitor.get_gpu_infomation(),
             "memory": machinemonitor.memory_information(),
         }
-
+ 
         machinemonitor.influxdbInsertData(server_info)
         time.sleep(args.interval)
