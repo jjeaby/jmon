@@ -216,7 +216,7 @@ if __name__ == '__main__':
     args = parser.parse_args()
     print(args)
 
-    machinemonitor = MachineMonitor(args.ip, args.port, args.id, args.password, args.database, str(args.commit).lower())
+    machinemonitor = Machine(args.ip, args.port, args.id, args.password, args.database, str(args.commit).lower())
     while True:
         server_info = {
             "machine": machinemonitor.machine_information(),
