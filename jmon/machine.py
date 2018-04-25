@@ -6,18 +6,18 @@ import pprint
 import socket
 import subprocess
 import time
+import re
 
 from influxdb import InfluxDBClient
 
 
 class Machine(object):
-    def __init__(self, host_ip='127.0.0.1', host_port='8086', id='', password='', database='cuda_information', commit='on'):
+    def __init__(self, host_ip='', host_port='8086', id='', password='', database='machine_information'):
         self.host_ip = host_ip
         self.host_port = host_port
         self.id = id
         self.password = password
         self.database = database
-        self.commit = commit
 
     def machine_information(self):
         socket_instance = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
@@ -142,7 +142,7 @@ class Machine(object):
                 cpu_temperature = device_temperature[idx]
                 break
 
-        cpu_info["cpu_temperature"] = float( float(cpu_temperature) / 1000 )
+        cpu_info["cpu_temperature"] = float(float(cpu_temperature) / 1000)
 
         return cpu_info
 
@@ -150,13 +150,13 @@ class Machine(object):
 
         host = self.host_ip
         port = self.host_port
-        """Instantiate a connection to the InfluxDB."""
-        user = self.id
+        user = str(self.id)
         password = self.password
         dbname = self.database
 
-        client = InfluxDBClient(host, port, user, password, dbname)
-
+        """Instantiate a connection to the InfluxDB."""
+        #client = InfluxDBClient(host=host, port=port, user=user, password=password, dbname=dbname, time=100000)
+        client = InfluxDBClient(host=host, port=port, username=user, password=password, database=dbname, timeout=10)
         # print("Write : cpu,atag=test1 idle=100,usertime=10,system=1")
         # client.write(['cpu,atag=test1 idle=100,usertime=10,system=1'], {'db': dbname}, 204, 'line')
 
@@ -178,10 +178,10 @@ class Machine(object):
                 fields_data[data] = gpu[idx][data]
         tags_data = json.dumps(tags_data)
         fields_data = json.dumps(fields_data)
-        print(tags_data)
-        print(fields_data)
-        now = datetime.datetime.today()
-        print(now)
+        # print(tags_data)
+        # print(fields_data)
+        # now = datetime.datetime.today()
+        # print(now)
         points = []
         point = {"measurement": 'machine_information',
                  # "time": now.strftime('%Y-%m-%d %H:%M:%S'),
@@ -192,31 +192,40 @@ class Machine(object):
         point["tags"] = json.loads(tags_data)
         point["fields"] = json.loads(fields_data)
 
-        pprint.pprint(point)
+        # pprint.pprint(point)
         points.append(point)
-        if self.commit == 'on':
+
+        if self.isValidIP(self.host_ip):
             ret = client.write_points(points)
-            print("DB 입력 결과 : [" + str(ret) + "]")
+            # print("DB 입력 결과 : [" + str(ret) + "]")
         pprint.pprint(point)
+
+    def isValidIP(self, ip):
+        m = re.match(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$", ip)
+        return bool(m) and all(map(lambda n: 0 <= int(n) <= 255, m.groups()))
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
         description='example code to play with InfluxDB')
-    parser.add_argument('--ip', type=str, required=True, default='127.0.0.1', help='hostname of InfluxDB http API')
+    parser.add_argument('--ip', type=str, required=False, default='', help='ip address of InfluxDB http API')
     parser.add_argument('--port', type=int, required=False, default=8086, help='port of InfluxDB http API')
     parser.add_argument('--id', type=str, required=True, default='', help='influxDB user id')
     parser.add_argument('--password', type=str, required=True, default='', help='influxDB user password')
-    parser.add_argument('--database', type=str, required=False, default='cuda_information',
+    parser.add_argument('--database', type=str, required=False, default='machine_information',
                         help='influxDB Database Name')
     parser.add_argument('--interval', type=int, required=False, default=5, help='monitoring interval second')
-    parser.add_argument('--commit', type=str, required=False, default='on', help='influxdb insert on/off')
 
     args = parser.parse_args()
-    print(args)
+    machinemonitor = Machine(host_ip=str(args.ip), host_port=args.port, id=args.id, password=args.password, database=args.database)
 
-    machinemonitor = Machine(args.ip, args.port, args.id, args.password, args.database, str(args.commit).lower())
+    # print(args)
+    # print( machinemonitor.isValidIP(args.ip))
+    if len(args.ip) > 0 and not machinemonitor.isValidIP(args.ip):
+        print("influxDB ip address is invalid!")
+        exit(1)
+
     while True:
         server_info = {
             "machine": machinemonitor.machine_information(),
@@ -224,6 +233,6 @@ if __name__ == '__main__':
             "gpu": machinemonitor.get_gpu_infomation(),
             "memory": machinemonitor.memory_information(),
         }
- 
+
         machinemonitor.influxdbInsertData(server_info)
         time.sleep(args.interval)
