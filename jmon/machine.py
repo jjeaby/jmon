@@ -156,7 +156,7 @@ class Machine(object):
 
         """Instantiate a connection to the InfluxDB."""
         #client = InfluxDBClient(host=host, port=port, user=user, password=password, dbname=dbname, time=100000)
-        client = InfluxDBClient(host=host, port=port, username=user, password=password, database=dbname, timeout=10)
+        client = InfluxDBClient(host=host, port=port, username=user, password=password, database=dbname, timeout=30)
         # print("Write : cpu,atag=test1 idle=100,usertime=10,system=1")
         # client.write(['cpu,atag=test1 idle=100,usertime=10,system=1'], {'db': dbname}, 204, 'line')
 

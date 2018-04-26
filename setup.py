@@ -12,7 +12,7 @@ install_requires = [
 
 setup(
     name='jmon',
-    version='0.212',
+    version='0.251',
     py_modules = ['jmon'],  
     packages=find_packages(exclude=['tests']),
     install_requires=install_requires,
