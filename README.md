@@ -24,7 +24,7 @@ python -m jmon.machine  [-h]
                         [--ip IP] 
                         [--port PORT] 
                         [--id ID ]
-                        [ --password PASSWORD]
+                        [--password PASSWORD]
                         [--database DATABASE] 
                         [--interval INTERVAL]
 

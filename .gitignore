@@ -2,3 +2,5 @@ build
 dist
 jmon.egg-info
 __pycache__
+.idea
+
