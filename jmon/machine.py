@@ -196,11 +196,20 @@ class Machine(object):
         if self.isValidIP(self.host_ip):
             ret = client.write_points(points)
             # print("DB 입력 결과 : [" + str(ret) + "]")
-        pprint.pprint(point)
+        # pprint.pprint(point)
+
 
     def isValidIP(self, ip):
         m = re.match(r"^(\d{1,3})\.(\d{1,3})\.(\d{1,3})\.(\d{1,3})$", ip)
         return bool(m) and all(map(lambda n: 0 <= int(n) <= 255, m.groups()))
+
+    def print_satus(self, server_info):
+        print("-" *200)
+        print("TIME : ", datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
+        print("-" *200)
+        pprint.pprint(server_info)
+        print("-" *200)
+        print("")
 
 
 if __name__ == '__main__':
@@ -209,8 +218,8 @@ if __name__ == '__main__':
         description='example code to play with InfluxDB')
     parser.add_argument('--ip', type=str, required=False, default='', help='ip address of InfluxDB http API')
     parser.add_argument('--port', type=int, required=False, default=8086, help='port of InfluxDB http API')
-    parser.add_argument('--id', type=str, required=True, default='', help='influxDB user id')
-    parser.add_argument('--password', type=str, required=True, default='', help='influxDB user password')
+    parser.add_argument('--id', type=str, required=False, default='', help='influxDB user id')
+    parser.add_argument('--password', type=str, required=False, default='', help='influxDB user password')
     parser.add_argument('--database', type=str, required=False, default='machine_information',
                         help='influxDB Database Name')
     parser.add_argument('--interval', type=int, required=False, default=5, help='monitoring interval second')
@@ -231,6 +240,8 @@ if __name__ == '__main__':
             "gpu": machinemonitor.get_gpu_infomation(),
             "memory": machinemonitor.memory_information(),
         }
+        if machinemonitor.isValidIP(str(args.ip)):
+            machinemonitor.influxdbInsertData(server_info)
 
-        machinemonitor.influxdbInsertData(server_info)
+        machinemonitor.print_satus(server_info)
         time.sleep(args.interval)
