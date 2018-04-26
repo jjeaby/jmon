@@ -20,21 +20,19 @@ class Machine(object):
         self.database = database
 
     def machine_information(self):
+        info = os.popen('uname -a').readlines()[-1].split()[0:]
         socket_instance = socket.socket(socket.AF_INET, socket.SOCK_DGRAM)
-        machine_info = {}
         try:
             socket_instance.connect(('192.0.0.8', 1027))
-            info = os.popen('uname -a').readlines()[-1].split()[0:]
-            machine_info = {
-                "machine_os_platform": info[0],
-                "machine_name": info[1],
-                "machine_ip_address": socket_instance.getsockname()[0]
-            }
-
+            ip_address = socket_instance.getsockname()[0]
         except socket.error:
-            machine_info["machine_ip_address"] = "OffLine"
-            return machine_info
+            ip_address = "OffLine"
 
+        machine_info = {
+            "machine_os_platform": info[0],
+            "machine_name": info[1],
+            "machine_ip_address": ip_address
+        }
         return machine_info
 
     def get_gpu_infomation(self):
