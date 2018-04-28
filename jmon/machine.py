@@ -204,18 +204,19 @@ class Machine(object):
         return bool(m) and all(map(lambda n: 0 <= int(n) <= 255, m.groups()))
 
     def print_satus(self, server_info):
-        print("-" *200)
+        os.system('cls' if os.name == 'nt' else 'clear')
+        print("-" *80)
         print("TIME : ", datetime.datetime.today().strftime('%Y-%m-%d %H:%M:%S'))
-        print("-" *200)
+        print("-" *80)
         pprint.pprint(server_info)
-        print("-" *200)
+        print("-" *80)
         print("")
 
 
 if __name__ == '__main__':
 
     parser = argparse.ArgumentParser(
-        description='example code to play with InfluxDB')
+        description="Machine's CPU, MEMORY, GPU Status diplay and send InfluxDB")
     parser.add_argument('--ip', type=str, required=False, default='', help='ip address of InfluxDB http API')
     parser.add_argument('--port', type=int, required=False, default=8086, help='port of InfluxDB http API')
     parser.add_argument('--id', type=str, required=False, default='', help='influxDB user id')
@@ -223,9 +224,16 @@ if __name__ == '__main__':
     parser.add_argument('--database', type=str, required=False, default='machine_information',
                         help='influxDB Database Name')
     parser.add_argument('--interval', type=int, required=False, default=5, help='monitoring interval second')
+    parser.add_argument('--log', type=str, required=False, default='true', help=r"set true is machine's cpu, memory, gpu status show console log as a json format")
 
     args = parser.parse_args()
     machinemonitor = Machine(host_ip=str(args.ip), host_port=args.port, id=args.id, password=args.password, database=args.database)
+    log = args.log.lower()
+
+    if log not in {'true', 'false'}:
+        print("machine.py: error: the following argument value is only true, false: --log")
+        exit(1)
+
 
     # print(args)
     # print( machinemonitor.isValidIP(args.ip))
@@ -242,6 +250,6 @@ if __name__ == '__main__':
         }
         if machinemonitor.isValidIP(str(args.ip)):
             machinemonitor.influxdbInsertData(server_info)
-
-        machinemonitor.print_satus(server_info)
+        if len(log) > 0 and log == 'true':
+            machinemonitor.print_satus(server_info)
         time.sleep(args.interval)
